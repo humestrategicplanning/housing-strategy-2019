@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset='utf-8' />
+  <title>Local search app</title>
+  <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+  <script src='https://api.mapbox.com/mapbox-gl-js/v1.0.0/mapbox-gl.js'></script>
+  <link href='https://api.mapbox.com/mapbox-gl-js/v1.0.0/mapbox-gl.css' rel='stylesheet' />
+  <script src='https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v4.2.0/mapbox-gl-geocoder.min.js'></script>
+  <link rel='stylesheet' href='https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v4.2.0/mapbox-gl-geocoder.css' type='text/css' />
+  <script src='https://npmcdn.com/@turf/turf/turf.js'></script>
+  <script
+  src="https://code.jquery.com/jquery-3.4.1.min.js"
+  integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo="
+  crossorigin="anonymous"></script>
+  <script src="https://d3js.org/d3.v5.js"></script>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+    }
+
+    #map {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 100%;
+    }
+    
+    .mapboxgl-ctrl-geocoder {
+      min-width: 300px;
+    }
+    
+    .category {
+      font-family: 'Roboto Medium', roboto, Arial, sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+    }
+    
+    .control {
+      border-radius: 3px;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.10);
+      z-index: 1;
+    }
+    
+    .title {
+      font-family: 'Roboto Medium', roboto, Arial, sans-serif;
+      position: absolute;
+      left: 10px;
+      top: 10px;
+      background-color: rgba(255, 255, 255, 1);
+    }
+    
+    .title h1 {
+      padding: 15px;
+      margin: 0 0 0 0;
+    }
+    
+    .legend {
+      font: 12px/20px 'Roboto Medium', roboto, Arial, sans-serif;
+      padding: 20px;
+      position: absolute;
+      right: 10px;
+      bottom: 30px;
+      background-color: rgba(255, 255, 255, 0.8);
+    }
+    
+    .legend h3 {
+      margin: 5px 0 2px;
+      font-size: 1.1em;
+    }
+    
+    .legend h2 {
+      margin: 0 0 5px;
+    }
+    
+    .leg-line {
+      display: flex;
+      align-items: center;
+    }
+    
+    .circle {
+      border: 1px solid black;
+      border-radius: 50%;
+      display: inline-block;
+      height: 12px;
+      margin-right: 5px;
+      width: 12px;
+    }
+    
+    .line {
+      margin-right: 5px;
+      width: 18px;
+      height:4px;
+      background: repeating-linear-gradient(to right,#D00C0C 0,#D00C0C 5px,transparent 5px,transparent 7px);
+    }
+    
+  </style>
+</head>
+<body>
+
+  <div id='map'></div>
+  
+  <div class='control title'>
+    <h1>Hume Housing Strategy</h1>
+  </div>
+  
+  <div class='control legend'>
+    <h2>Legend</h2>
+    <div class='leg-line'><span class='line'></span>Hume Boundary</div>
+    <h3>Housing Category</h3>
+    <div class='leg-line'><span class="circle" style='background-color: #5E1BF2'></span>High Change</div>
+    <div class='leg-line'><span class="circle" style='background-color: #A394FA'></span>Moderate Change</div>
+    <div class='leg-line'><span class="circle" style='background-color: #D1D1FA'></span>Gradual Change</div>
+    <div class='leg-line'><span class="circle" style='background-color: #FFB0BA'></span>Limited Change</div>
+  </div>
+  
+<script>
+  
+  const humeBbox = [144.632482, -37.712416, 144.977766, -37.481958];
+  const housingOpacity = 0.7;
+  const bounds = [
+    [144.372711,-37.839072], [145.3,-37.379979]
+  ];
+  
+  mapboxgl.accessToken= 'pk.eyJ1IjoiYmlza3dpa21hbiIsImEiOiJjaWxidzVlcGQxcmtxdWJrbjQ2Zng3bWN5In0.KcfLaovMGcEZkl6cyU6_Hw';
+  var map = new mapboxgl.Map({
+    container: 'map',
+    style: 'mapbox://styles/biskwikman/cjwbe97kt1cao1cl6h3ywigtp',  //'mapbox://styles/biskwikman/cjw8whqdc61qp1cqi1ohnzhhj',//'https://api.maptiler.com/maps/basic/style.json?key=urAX96KumYqkWvsiKnKq',
+    center: [144.850, -37.600],
+    zoom: 9,
+    maxBounds: bounds
+  });
+  
+  map.fitBounds([[144.632482, -37.712416], [144.977766, -37.481958]], {padding: 20});
+  
+  const geocoder = new MapboxGeocoder({ // Initialize the geocoder
+  accessToken: mapboxgl.accessToken, // Set the access token
+  mapboxgl: mapboxgl, // Set the mapbox-gl instance
+  marker: true, //use the default marker style
+  placeholder: 'Search for an address in Hume...',
+  types: 'address',
+  bbox: humeBbox,
+  clearOnBlur: true
+  });
+  
+  
+
+  // Add the geocoder to the map
+  map.addControl(geocoder);
+  
+  //add hume boundary
+  map.on("load", function() {
+    
+  //get index of first symbol layer in map style
+  var layers = map.getStyle().layers;
+  var firstSymbolId;
+  for (var i = 0; i < layers.length; i++) {
+    if (layers[i].type === 'symbol') {
+      firstSymbolId = layers[i].id;
+      break;
+    }
+  }
+    
+    //add geojson data
+    map.addLayer({
+      'id': 'hume',
+      'type': 'line',
+      'source': {
+        'type': 'geojson',
+        'data': 'data/hume-geo.geojson'
+      },
+      'layout': {
+        'line-join': 'round',
+        'line-cap': 'round'
+      },
+      'paint': {
+        'line-color': '#D00C0C',
+        'line-width': 4,
+        'line-dasharray': [3, 2],
+      }
+    }, firstSymbolId)
+    
+    map.addSource('changeAreas', {
+      type: 'geojson',
+      data: './data/change-areas.geojson'
+    });
+    
+    //add geojson data to map and style fills
+    map.addLayer({
+      'source': 'changeAreas',
+      'id': 'areas',
+      'type': 'fill',
+      'paint': {
+        'fill-color': [
+          'match',
+          ['get', 'Category'],
+          'Limited Change', '#FFB0BA',
+          'Gradual', '#D1D1FA',
+          'Moderate', '#A394FA',
+          'Substantial Change', '#5E1BF2',
+          '#fff'
+        ],
+        'fill-opacity': housingOpacity
+      }
+    }, firstSymbolId);
+    
+    map.addLayer({
+      'source': 'changeAreas',
+      'id': 'area-boundaries',
+      'type': 'line',
+      'paint': {
+        'line-color': 'black',
+        'line-opacity': 0.5
+      }
+    }, firstSymbolId);
+    
+    //search for address and create popup based on location
+    fetch('data/change-areas.geojson').then(response => response.json())
+      .then(data => {
+        geocoder.on('result', function() {
+          const geocoderLng = geocoder.mapMarker._lngLat.lng;
+          const geocoderLat = geocoder.mapMarker._lngLat.lat;
+          const searchedMarker = turf.point([geocoderLng, geocoderLat]);
+          let inArea = false;
+          console.log(searchedMarker);
+          for (f=0; f<data.features.length; f++) {
+            if (turf.booleanPointInPolygon(searchedMarker, data.features[f]) == true) {
+              inArea = true;
+              const searchedInsidePopup = new mapboxgl.Popup({anchor: 'top'})
+              .setLngLat(geocoder.mapMarker._lngLat)
+              .setHTML('<b class="category">'+data.features[f].properties.Category+'</b>'+'<div class="info">'+'For more information, <a href="pdf/test.pdf">click here.</a>'+'</div>')
+              .addTo(map)
+              //clear if not in polygon as well
+              window.onclick = function() {
+                geocoder.clear()
+              }
+              geocoder.on('loading', function() {
+                searchedInsidePopup.remove()
+              })
+            }
+          }
+          if (inArea == false) {
+            const searchPopup = new mapboxgl.Popup({anchor: 'top'})
+            .setLngLat(geocoder.mapMarker._lngLat)
+            .setHTML('<b class="category">'+'Not in a Change Area'+'<br/>'+'<div class="info">'+'For more information, <a href="pdf/test.pdf">click here.</a>'+'</div>')
+            .addTo(map)
+            window.onclick = function() {
+              geocoder.clear()
+            }
+            geocoder.on('loading', function() {
+              searchPopup.remove()
+            })
+          }
+        });
+      });
+    
+    //make a popup
+    map.on('click', 'areas', function(e) {
+        const category = e.features[0].properties.Category;
+        new mapboxgl.Popup()
+            .setLngLat(e.lngLat)
+            .setHTML('<b class="category">'+category+'</b>' + '<div class="info">'+'For more information, <a href="pdf/test.pdf">click here.</a>'+'</div>')
+            .addTo(map);
+    });
+      
+    map.on('mouseenter', 'areas', function () {
+      map.getCanvas().style.cursor = 'pointer';
+    });
+      
+    map.on('mouseleave', 'areas', function () {
+      map.getCanvas().style.cursor = '';
+    });
+  });
+</script>
+
+</body>
+</html>
