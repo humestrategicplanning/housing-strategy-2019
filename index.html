@@ -172,21 +172,7 @@
   
   map.fitBounds([[144.632482, -37.712416], [144.977766, -37.481958]], {padding: 20});
   
-  // Change map baselayer (style)
-  const layerList = document.getElementById('style-select');
-  const inputs = layerList.getElementsByTagName('input');
   
-  function switchLayer(layer) {
-    const layerId = layer.target.id;
-    map.setStyle('mapbox://styles/humestrategicplanning/' + layerId);
-    map.on('style.load', function() {
-      
-    })
-  }
-  
-  for (let i = 0; i < inputs.length; i++) {
-    inputs[i].onchange = switchLayer;
-  }
   
   //geocoder stuff
   const geocoder = new MapboxGeocoder({ // Initialize the geocoder
@@ -218,7 +204,8 @@
   }
     
     //add geojson data
-    map.addLayer({
+    function addData() {
+      map.addLayer({
       'id': 'hume',
       'type': 'line',
       'source': {
@@ -274,6 +261,24 @@
         'line-opacity': 0.5
       }
     }, firstSymbolId);
+    }
+    addData();
+    
+    // Change map baselayer (style)
+    const layerList = document.getElementById('style-select');
+    const inputs = layerList.getElementsByTagName('input');
+    
+    function switchLayer(layer) {
+      const layerId = layer.target.id;
+      map.setStyle('mapbox://styles/humestrategicplanning/' + layerId);
+      map.on('style.load', function() {
+        addData();
+      })
+    }
+    
+    for (let i = 0; i < inputs.length; i++) {
+      inputs[i].onchange = switchLayer;
+    }
     
     //add hatch pattern to strategic site
     /*map.loadImage('./data/hatch.png', function(err, image) {
