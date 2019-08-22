@@ -103,6 +103,35 @@
       margin-top: 10px;
     }
     
+    .splash {
+      font: 12px/20px 'Roboto Medium', roboto, Arial, sans-serif;
+      padding: 20px;
+      background-color: rgba(255, 255, 255, 0.9);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-content: center;
+    }
+    
+    .full {
+      width: 100%;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-content: center;
+    }
+    
+    .flex-center-content {
+      display: flex;
+      justify-content: center;
+    }
+    
+    .button {
+      margin: 20% 35% 0;
+      background-color: #BFD3E6;
+      border-radius: 10px;
+      border: 2px solid gray;
+    }
   </style>
 </head>
 <body>
@@ -129,8 +158,23 @@
       <label for='streets'>streets</label>
     </div>
   </div>
+  <div id='splash' class='full'>
+    <div class='control splash'>
+      <h1 class='flex-center-content'>Welcome to the Hume Housing Strategy Map!</h1>
+      <h3 class='flex-center-content'>Use this map to see where housing categories from the Hume Housing Strategy are located.</h3>
+      <h3 class='flex-center-content'>Click on a housing category to see a description of it, or enter an address in the search bar in the top right to see what housing category a specific property is in.</h3>
+      <button id='b' class='button' type="button">Click here to close message</button>
+    </div>
+  </div>
   
 <script>
+
+  document.getElementById('b').onclick = removeSplash;
+
+  function removeSplash() {
+    const splash = document.getElementById('splash');
+    splash.parentNode.removeChild(splash);
+  }
   
   const changeAreaColors = {
     limited: '#BFD3E6',
@@ -161,10 +205,10 @@
     document.getElementById('map').innerHTML = '<div class="control desc-box">"TEST"</div>';
   }
   
-  mapboxgl.accessToken= 'pk.eyJ1IjoiaHVtZXN0cmF0ZWdpY3BsYW5uaW5nIiwiYSI6ImNqeGswZWJpbzFrNGgzeW9qZGZmcDNqZGcifQ.5VOjZz6s1CYrJwo4LKiD0Q';//'pk.eyJ1IjoiYmlza3dpa21hbiIsImEiOiJjaWxidzVlcGQxcmtxdWJrbjQ2Zng3bWN5In0.KcfLaovMGcEZkl6cyU6_Hw';
+  mapboxgl.accessToken= 'pk.eyJ1IjoiaHVtZXN0cmF0ZWdpY3BsYW5uaW5nIiwiYSI6ImNqeGswZWJpbzFrNGgzeW9qZGZmcDNqZGcifQ.5VOjZz6s1CYrJwo4LKiD0Q';
   var map = new mapboxgl.Map({
     container: 'map',
-    style: 'mapbox://styles/humestrategicplanning/cjzi0ohe13l4f1cpclaxbjt82',//'mapbox://styles/biskwikman/cjwbe97kt1cao1cl6h3ywigtp',
+    style: 'mapbox://styles/humestrategicplanning/cjzi0ohe13l4f1cpclaxbjt82',
     center: [144.850, -37.600],
     zoom: 9,
     maxBounds: bounds
