@@ -367,7 +367,7 @@ map.on("load", function () {
       if (inArea == false) {
         var searchPopup = new mapboxgl.Popup({
           anchor: 'top'
-        }).setLngLat(geocoder.mapMarker._lngLat).setHTML('<b class="category">' + 'Not in a Change Area' + '</b>' + '<br/>' + '<div class="info">' + 'For more information, <a href="pdf/test.pdf">click here.</a>' + '</div>').addTo(map);
+        }).setLngLat(geocoder.mapMarker._lngLat).setHTML('<b class="category">' + 'Outside of Study Area' + '</b>' + '<br/>' + '<div class="info">' + 'This property is outside the study area for the Draft Housing Diversity Strategy.' + '</div>').addTo(map);
 
         window.onclick = function () {
           geocoder.clear();
