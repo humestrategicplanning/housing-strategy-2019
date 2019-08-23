@@ -169,87 +169,76 @@
   
 <script>
 
-  document.getElementById('b').onclick = removeSplash;
+"use strict";
 
-  function removeSplash() {
-    const splash = document.getElementById('splash');
-    splash.parentNode.removeChild(splash);
-  }
-  
-  const changeAreaColors = {
-    limited: '#BFD3E6',
-    gradual: '#8C96C6',
-    moderate: '#BF56A7',
-    high: '#FFCE19'
-  };
-  
-  const changeAreaDesc = [
-    "Limited Change Description Here",
-    "Gradual Change Description Here",
-    "Moderate Change Description Here",
-    "High Change Description Here"
-  ];
-  
-  const changeAreaNames = ['Limited Change', 'Gradual Change', 'Moderate Change', 'High Change'];
+document.getElementById('b').onclick = removeSplash;
 
-  const changeAreaPath = './data/change-areas-v4.geojson';
-  const strategicSitesPath = './data/strategic-sites-v1.geojson';
-  
-  const humeBbox = [144.632482, -37.712416, 144.977766, -37.481958];
-  const housingOpacity = 0.7;
-  const bounds = [
-    [144.372711,-37.839072], [145.3,-37.379979]
-  ];
-  
-  function openDescription() {
-    document.getElementById('map').innerHTML = '<div class="control desc-box">"TEST"</div>';
-  }
-  
-  mapboxgl.accessToken= 'pk.eyJ1IjoiaHVtZXN0cmF0ZWdpY3BsYW5uaW5nIiwiYSI6ImNqeGswZWJpbzFrNGgzeW9qZGZmcDNqZGcifQ.5VOjZz6s1CYrJwo4LKiD0Q';
-  var map = new mapboxgl.Map({
-    container: 'map',
-    style: 'mapbox://styles/humestrategicplanning/cjzi0ohe13l4f1cpclaxbjt82',
-    center: [144.850, -37.600],
-    zoom: 9,
-    maxBounds: bounds
-  });
-  
-  map.fitBounds([[144.632482, -37.712416], [144.977766, -37.481958]], {padding: 20});
-  
-  
-  
-  //geocoder stuff
-  const geocoder = new MapboxGeocoder({ // Initialize the geocoder
-  accessToken: mapboxgl.accessToken, // Set the access token
-  mapboxgl: mapboxgl, // Set the mapbox-gl instance
-  marker: true, //use the default marker style
+function removeSplash() {
+  var splash = document.getElementById('splash');
+  splash.parentNode.removeChild(splash);
+}
+
+var changeAreaColors = {
+  limited: '#BFD3E6',
+  gradual: '#8C96C6',
+  moderate: '#BF56A7',
+  high: '#FFCE19'
+};
+var changeAreaDesc = ["Limited Change Description Here", "Gradual Change Description Here", "Moderate Change Description Here", "High Change Description Here"];
+var changeAreaNames = ['Limited Change', 'Gradual Change', 'Moderate Change', 'High Change'];
+var changeAreaPath = './data/change-areas-v4.geojson';
+var strategicSitesPath = './data/strategic-sites-v1.geojson';
+var humeBbox = [144.632482, -37.712416, 144.977766, -37.481958];
+var housingOpacity = 0.7;
+var bounds = [[144.372711, -37.839072], [145.3, -37.379979]];
+
+function openDescription() {
+  document.getElementById('map').innerHTML = '<div class="control desc-box">"TEST"</div>';
+}
+
+mapboxgl.accessToken = 'pk.eyJ1IjoiaHVtZXN0cmF0ZWdpY3BsYW5uaW5nIiwiYSI6ImNqeGswZWJpbzFrNGgzeW9qZGZmcDNqZGcifQ.5VOjZz6s1CYrJwo4LKiD0Q';
+var map = new mapboxgl.Map({
+  container: 'map',
+  style: 'mapbox://styles/humestrategicplanning/cjzi0ohe13l4f1cpclaxbjt82',
+  center: [144.850, -37.600],
+  zoom: 9,
+  maxBounds: bounds
+});
+map.fitBounds([[144.632482, -37.712416], [144.977766, -37.481958]], {
+  padding: 20
+}); //geocoder stuff
+
+var geocoder = new MapboxGeocoder({
+  // Initialize the geocoder
+  accessToken: mapboxgl.accessToken,
+  // Set the access token
+  mapboxgl: mapboxgl,
+  // Set the mapbox-gl instance
+  marker: true,
+  //use the default marker style
   placeholder: 'Search for an address in Hume...',
   types: 'address',
   bbox: humeBbox,
   clearOnBlur: true
-  });
-  
-  
+}); // Add the geocoder to the map
 
-  // Add the geocoder to the map
-  map.addControl(geocoder);
-  
-  //add hume boundary
-  map.on("load", function() {
-    
+map.addControl(geocoder); //add hume boundary
+
+map.on("load", function () {
   //get index of first symbol layer in map style
   var layers = map.getStyle().layers;
   var firstSymbolId;
+
   for (var i = 0; i < layers.length; i++) {
     if (layers[i].type === 'symbol') {
       firstSymbolId = layers[i].id;
       break;
     }
-  }
-    
-    //add geojson data
-    function addData() {
-      map.addLayer({
+  } //add geojson data
+
+
+  function addData() {
+    map.addLayer({
       'id': 'hume',
       'type': 'line',
       'source': {
@@ -263,39 +252,31 @@
       'paint': {
         'line-color': '#D00C0C',
         'line-width': 4,
-        'line-dasharray': [3, 2],
+        'line-dasharray': [3, 2]
       }
-    }, firstSymbolId)
-    
+    }, firstSymbolId);
     map.addSource('changeAreas', {
       type: 'geojson',
       data: changeAreaPath
     });
-    
     map.addSource('strategicSites', {
       type: 'geojson',
       data: strategicSitesPath
-    });
-      
-    //add geojson data to map and style fills
+    }); //add geojson data to map and style fills
+
     map.addLayer({
       'source': 'changeAreas',
       'id': 'areas',
       'type': 'fill',
       'paint': {
-        'fill-color': [
-          'match',
-          ['get', 'Category'],
-          'Limited Change', changeAreaColors.limited, //'#FFB0BA'
-          'Gradual Change', changeAreaColors.gradual, //'#D1D1FA'
-          'Moderate Change', changeAreaColors.moderate, //'#A394FA'
-          'High Change', changeAreaColors.high, //'#5E1BF2'
-          '#fff'
-        ],
+        'fill-color': ['match', ['get', 'Category'], 'Limited Change', changeAreaColors.limited, //'#FFB0BA'
+        'Gradual Change', changeAreaColors.gradual, //'#D1D1FA'
+        'Moderate Change', changeAreaColors.moderate, //'#A394FA'
+        'High Change', changeAreaColors.high, //'#5E1BF2'
+        '#fff'],
         'fill-opacity': housingOpacity
       }
     }, firstSymbolId);
-    
     map.addLayer({
       'source': 'changeAreas',
       'id': 'area-boundaries',
@@ -305,115 +286,116 @@
         'line-opacity': 0.5
       }
     }, firstSymbolId);
+  }
+
+  addData(); // Change map baselayer (style)
+
+  var layerList = document.getElementById('style-select');
+  var inputs = layerList.getElementsByTagName('input');
+
+  function switchLayer(layer) {
+    var layerId = layer.target.id;
+    map.setStyle('mapbox://styles/humestrategicplanning/' + layerId);
+    map.on('style.load', function () {
+      addData();
+    });
+  }
+
+  for (var _i = 0; _i < inputs.length; _i++) {
+    inputs[_i].onchange = switchLayer;
+  } //add hatch pattern to strategic site
+
+  /*map.loadImage('./data/hatch.png', function(err, image) {
+    if (err) throw err;
+    
+    map.addImage('pattern', image);
+  
+  map.addLayer({
+    'source': 'strategicSites',
+    'id': 'sites-fill',
+    'type': 'fill',
+    'paint': {
+      'fill-pattern': 'pattern',
+      'fill-opacity': 0.8
     }
-    addData();
-    
-    // Change map baselayer (style)
-    const layerList = document.getElementById('style-select');
-    const inputs = layerList.getElementsByTagName('input');
-    
-    function switchLayer(layer) {
-      const layerId = layer.target.id;
-      map.setStyle('mapbox://styles/humestrategicplanning/' + layerId);
-      map.on('style.load', function() {
-        addData();
-      })
-    }
-    
-    for (let i = 0; i < inputs.length; i++) {
-      inputs[i].onchange = switchLayer;
-    }
-    
-    //add hatch pattern to strategic site
-    /*map.loadImage('./data/hatch.png', function(err, image) {
-      if (err) throw err;
-      
-      map.addImage('pattern', image);
-    
-    map.addLayer({
-      'source': 'strategicSites',
-      'id': 'sites-fill',
-      'type': 'fill',
-      'paint': {
-        'fill-pattern': 'pattern',
-        'fill-opacity': 0.8
-      }
-    }, firstSymbolId);
-    });
-    
-    map.addLayer({
-      'source': 'strategicSites',
-      'id': 'sites-boundary',
-      'type': 'line',
-      'paint': {
-        'line-color': 'yellow',
-        'line-opacity': 0.8,
-        'line-width': 4
-      }
-    }, firstSymbolId);
-    */
-    
-    //search for address and create popup based on location
-    fetch('data/change-areas.geojson').then(response => response.json())
-      .then(data => {
-        geocoder.on('result', function() {
-          const geocoderLng = geocoder.mapMarker._lngLat.lng;
-          const geocoderLat = geocoder.mapMarker._lngLat.lat;
-          const searchedMarker = turf.point([geocoderLng, geocoderLat]);
-          let inArea = false;
-          console.log(searchedMarker);
-          for (f=0; f<data.features.length; f++) {
-            if (turf.booleanPointInPolygon(searchedMarker, data.features[f]) == true) {
-              inArea = true;
-              const searchedInsidePopup = new mapboxgl.Popup({anchor: 'top'})
-              .setLngLat(geocoder.mapMarker._lngLat)
-              .setHTML('<b class="category">'+data.features[f].properties.Category+'</b>'+'<div class="info">'+'For more information, <a class="desc-click" href="pdf/test.pdf">click here.</a>'+'</div>')
-              .addTo(map)
-              //clear if not in polygon as well
-              window.onclick = function() {
-                geocoder.clear()
-              }
-              geocoder.on('loading', function() {
-                searchedInsidePopup.remove()
-              })
-            }
-          }
-          if (inArea == false) {
-            const searchPopup = new mapboxgl.Popup({anchor: 'top'})
-            .setLngLat(geocoder.mapMarker._lngLat)
-            .setHTML('<b class="category">'+'Not in a Change Area'+'</b>'+'<br/>'+'<div class="info">'+'For more information, <a href="pdf/test.pdf">click here.</a>'+'</div>')
-            .addTo(map)
-            window.onclick = function() {
-              geocoder.clear()
-            }
-            geocoder.on('loading', function() {
-              searchPopup.remove()
-            })
-          }
-        });
-      });
-    
-    //make a popup
-    map.on('click', 'areas', function(e) {
-        const category = e.features[0].properties.Category;
-        for (i=0; i<changeAreaNames.length; i++) {
-          if (category == changeAreaNames[i]) {
-          new mapboxgl.Popup()
-              .setLngLat(e.lngLat)
-              .setHTML('<b class="category">'+category+'</b>' + '<div class="info">'+changeAreaDesc[i]+'<br/>'+'For more information, <a class="desc-click" onclick="openDescription()">click here.</a>'+'</div>')
-              .addTo(map);
-          }
-        }
-    });
-    
-    map.on('mouseenter', 'areas', function () {
-      map.getCanvas().style.cursor = 'pointer';
-    });
-      
-    map.on('mouseleave', 'areas', function () {
-      map.getCanvas().style.cursor = '';
-    });
+  }, firstSymbolId);
   });
+  
+  map.addLayer({
+    'source': 'strategicSites',
+    'id': 'sites-boundary',
+    'type': 'line',
+    'paint': {
+      'line-color': 'yellow',
+      'line-opacity': 0.8,
+      'line-width': 4
+    }
+  }, firstSymbolId);
+  */
+  //search for address and create popup based on location
+
+
+  fetch('data/change-areas.geojson').then(function (response) {
+    return response.json();
+  }).then(function (data) {
+    geocoder.on('result', function () {
+      var geocoderLng = geocoder.mapMarker._lngLat.lng;
+      var geocoderLat = geocoder.mapMarker._lngLat.lat;
+      var searchedMarker = turf.point([geocoderLng, geocoderLat]);
+      var inArea = false;
+      console.log(searchedMarker);
+
+      for (f = 0; f < data.features.length; f++) {
+        if (turf.booleanPointInPolygon(searchedMarker, data.features[f]) == true) {
+          (function () {
+            inArea = true;
+            var searchedInsidePopup = new mapboxgl.Popup({
+              anchor: 'top'
+            }).setLngLat(geocoder.mapMarker._lngLat).setHTML('<b class="category">' + data.features[f].properties.Category + '</b>' + '<div class="info">' + 'For more information, <a class="desc-click" href="pdf/test.pdf">click here.</a>' + '</div>').addTo(map); //clear if not in polygon as well
+
+            window.onclick = function () {
+              geocoder.clear();
+            };
+
+            geocoder.on('loading', function () {
+              searchedInsidePopup.remove();
+            });
+          })();
+        }
+      }
+
+      if (inArea == false) {
+        var searchPopup = new mapboxgl.Popup({
+          anchor: 'top'
+        }).setLngLat(geocoder.mapMarker._lngLat).setHTML('<b class="category">' + 'Not in a Change Area' + '</b>' + '<br/>' + '<div class="info">' + 'For more information, <a href="pdf/test.pdf">click here.</a>' + '</div>').addTo(map);
+
+        window.onclick = function () {
+          geocoder.clear();
+        };
+
+        geocoder.on('loading', function () {
+          searchPopup.remove();
+        });
+      }
+    });
+  }); //make a popup
+
+  map.on('click', 'areas', function (e) {
+    var category = e.features[0].properties.Category;
+
+    for (i = 0; i < changeAreaNames.length; i++) {
+      if (category == changeAreaNames[i]) {
+        new mapboxgl.Popup().setLngLat(e.lngLat).setHTML('<b class="category">' + category + '</b>' + '<div class="info">' + changeAreaDesc[i] + '<br/>' + 'For more information, <a class="desc-click" onclick="openDescription()">click here.</a>' + '</div>').addTo(map);
+      }
+    }
+  });
+  map.on('mouseenter', 'areas', function () {
+    map.getCanvas().style.cursor = 'pointer';
+  });
+  map.on('mouseleave', 'areas', function () {
+    map.getCanvas().style.cursor = '';
+  });
+});
 </script>
 
 </body>
