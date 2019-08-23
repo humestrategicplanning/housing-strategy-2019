@@ -186,7 +186,7 @@ var changeAreaColors = {
 };
 var changeAreaDesc = ["Limited Change Description Here", "Gradual Change Areas are not restricted by specific planning controls that limit subdivision of land, so it is expected new housing such as units and town houses will be developed gradually over time and change the look of these areas over the next 20 years. These areas are generally not a convenient walk to local shops and public transport so whilst new housing will occur naturally over time, it is not the preferred location for majority of our smaller homes as compared to the Moderate and High Change Areas. ", "Moderate Change Description Here", "High Change Description Here"];
 var changeAreaNames = ['Limited Change', 'Gradual Change', 'Moderate Change', 'High Change'];
-var changeAreaPath = './data/change-areas-v4.geojson';
+var changeAreaPath = './data/change-areas-v5.geojson';
 var strategicSitesPath = './data/strategic-sites-v1.geojson';
 var humeBbox = [144.632482, -37.712416, 144.977766, -37.481958];
 var housingOpacity = 0.7;
@@ -303,68 +303,46 @@ map.on("load", function () {
 
   for (var _i = 0; _i < inputs.length; _i++) {
     inputs[_i].onchange = switchLayer;
-  } //add hatch pattern to strategic site
+  }
 
-  /*map.loadImage('./data/hatch.png', function(err, image) {
-    if (err) throw err;
-    
-    map.addImage('pattern', image);
-  
-  map.addLayer({
-    'source': 'strategicSites',
-    'id': 'sites-fill',
-    'type': 'fill',
-    'paint': {
-      'fill-pattern': 'pattern',
-      'fill-opacity': 0.8
-    }
-  }, firstSymbolId);
-  });
-  
-  map.addLayer({
-    'source': 'strategicSites',
-    'id': 'sites-boundary',
-    'type': 'line',
-    'paint': {
-      'line-color': 'yellow',
-      'line-opacity': 0.8,
-      'line-width': 4
-    }
-  }, firstSymbolId);
-  */
-  //search for address and create popup based on location
-
-
-  fetch('data/change-areas.geojson').then(function (response) {
+  //make a popup on search
+  fetch('data/change-areas-v5.geojson').then(function (response) {
     return response.json();
   }).then(function (data) {
     geocoder.on('result', function () {
       var geocoderLng = geocoder.mapMarker._lngLat.lng;
       var geocoderLat = geocoder.mapMarker._lngLat.lat;
       var searchedMarker = turf.point([geocoderLng, geocoderLat]);
+      console.log(data);
       var inArea = false;
-      console.log(searchedMarker);
 
       for (var f = 0; f < data.features.length; f++) {
         if (turf.booleanPointInPolygon(searchedMarker, data.features[f]) == true) {
           (function () {
             inArea = true;
-            var searchedInsidePopup = new mapboxgl.Popup({
-              anchor: 'top'
-            }).setLngLat(geocoder.mapMarker._lngLat).setHTML('<b class="category">' + data.features[f].properties.Category + '</b>' + '<div class="info">' + 'For more information, <a class="desc-click" href="pdf/test.pdf">click here.</a>' + '</div>').addTo(map); //clear if not in polygon as well
-
-            window.onclick = function () {
-              geocoder.clear();
-            };
-
-            geocoder.on('loading', function () {
-              searchedInsidePopup.remove();
-            });
+            console.log('true')
+            for (i = 0; i < changeAreaNames.length; i++) {
+              console.log(changeAreaNames[i]);
+              console.log(data.features[f].properties.Category);
+              if (data.features[f].properties.Category == changeAreaNames[i]) {
+                var searchedInsidePopup = new mapboxgl.Popup({anchor: 'top'})
+                    .setLngLat(geocoder.mapMarker._lngLat).setHTML('<b class="category">' + data.features[f].properties.Category + '</b>' + '<div class="info">' + changeAreaDesc[i] + '<br/>' + 'For more information, <a class="desc-click" href="pdf/test.pdf">click here.</a>' + '</div>').addTo(map);
+                
+                window.onclick = function () {
+                  geocoder.clear();
+                };
+    
+                geocoder.on('loading', function () {
+                  searchedInsidePopup.remove();
+                });
+              }
+            }
           })();
         }
       }
 
       if (inArea == false) {
+        console.log('false');
         var searchPopup = new mapboxgl.Popup({
           anchor: 'top'
         }).setLngLat(geocoder.mapMarker._lngLat).setHTML('<b class="category">' + 'Outside of Study Area' + '</b>' + '<br/>' + '<div class="info">' + 'This property is outside the study area for the Draft Housing Diversity Strategy.' + '</div>').addTo(map);
@@ -378,8 +356,9 @@ map.on("load", function () {
         });
       }
     });
-  }); //make a popup
-
+  });
+  
+  //make a popup on click
   map.on('click', 'areas', function (e) {
     var category = e.features[0].properties.Category;
 
