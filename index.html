@@ -345,7 +345,7 @@ map.on("load", function () {
       var inArea = false;
       console.log(searchedMarker);
 
-      for (f = 0; f < data.features.length; f++) {
+      for (var f = 0; f < data.features.length; f++) {
         if (turf.booleanPointInPolygon(searchedMarker, data.features[f]) == true) {
           (function () {
             inArea = true;
