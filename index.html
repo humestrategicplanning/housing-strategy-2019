@@ -127,10 +127,14 @@
     }
     
     .button {
-      margin: 20% 35% 0;
+      margin: 10% 35% 0;
       background-color: #BFD3E6;
       border-radius: 10px;
       border: 2px solid gray;
+    }
+    
+    #splash-title {
+      margin-bottom: 40px;
     }
   </style>
 </head>
@@ -160,10 +164,11 @@
   </div>
   <div id='splash' class='full'>
     <div class='control splash'>
-      <h1 class='flex-center-content'>Welcome to the Hume Housing Strategy Map!</h1>
-      <h3 class='flex-center-content'>Use this map to see where housing categories from the Hume Housing Strategy are located.</h3>
+      <h1 id="splash-title" class='flex-center-content'>Welcome to the Draft Hume Housing Diversity Strategy Map!</h1>
+      <h3 class='flex-center-content'>Use this map to see where housing categories from the Draft Hume Housing Strategy are located.</h3>
       <h3 class='flex-center-content'>Click on a housing category to see a description of it, or enter an address in the search bar in the top right to see what housing category a specific property is in.</h3>
       <button id='b' class='button' type="button">Click here to close message</button>
+      <p class="flex-center-content" id="disclaimer">Disclaimer: Hume City Council does not guarantee the accuracy of this data.</p>
     </div>
   </div>
   
@@ -184,10 +189,11 @@ var changeAreaColors = {
   moderate: '#BF56A7',
   high: '#FFCE19'
 };
+
 var changeAreaDesc = ["Limited Change Description Here", "Gradual Change Areas are not restricted by specific planning controls that limit subdivision of land, so it is expected new housing such as units and town houses will be developed gradually over time and change the look of these areas over the next 20 years. These areas are generally not a convenient walk to local shops and public transport so whilst new housing will occur naturally over time, it is not the preferred location for majority of our smaller homes as compared to the Moderate and High Change Areas. ", "Moderate Change Description Here", "High Change Description Here"];
+
 var changeAreaNames = ['Limited Change', 'Gradual Change', 'Moderate Change', 'High Change'];
 var changeAreaPath = './data/change-areas-v5.geojson';
-var strategicSitesPath = './data/strategic-sites-v1.geojson';
 var humeBbox = [144.632482, -37.712416, 144.977766, -37.481958];
 var housingOpacity = 0.7;
 var bounds = [[144.372711, -37.839072], [145.3, -37.379979]];
@@ -206,8 +212,9 @@ var map = new mapboxgl.Map({
 });
 map.fitBounds([[144.632482, -37.712416], [144.977766, -37.481958]], {
   padding: 20
-}); //geocoder stuff
+});
 
+//geocoder stuff
 var geocoder = new MapboxGeocoder({
   // Initialize the geocoder
   accessToken: mapboxgl.accessToken,
@@ -220,10 +227,12 @@ var geocoder = new MapboxGeocoder({
   types: 'address',
   bbox: humeBbox,
   clearOnBlur: true
-}); // Add the geocoder to the map
+});
 
-map.addControl(geocoder); //add hume boundary
+// Add the geocoder to the map
+map.addControl(geocoder);
 
+//add hume boundary
 map.on("load", function () {
   //get index of first symbol layer in map style
   var layers = map.getStyle().layers;
@@ -234,9 +243,9 @@ map.on("load", function () {
       firstSymbolId = layers[i].id;
       break;
     }
-  } //add geojson data
-
-
+  }
+  
+  //add geojson data
   function addData() {
     map.addLayer({
       'id': 'hume',
@@ -259,20 +268,17 @@ map.on("load", function () {
       type: 'geojson',
       data: changeAreaPath
     });
-    map.addSource('strategicSites', {
-      type: 'geojson',
-      data: strategicSitesPath
-    }); //add geojson data to map and style fills
-
+    
+    //add geojson data to map and style fills
     map.addLayer({
       'source': 'changeAreas',
       'id': 'areas',
       'type': 'fill',
       'paint': {
-        'fill-color': ['match', ['get', 'Category'], 'Limited Change', changeAreaColors.limited, //'#FFB0BA'
-        'Gradual Change', changeAreaColors.gradual, //'#D1D1FA'
-        'Moderate Change', changeAreaColors.moderate, //'#A394FA'
-        'High Change', changeAreaColors.high, //'#5E1BF2'
+        'fill-color': ['match', ['get', 'Category'], 'Limited Change', changeAreaColors.limited,
+        'Gradual Change', changeAreaColors.gradual,
+        'Moderate Change', changeAreaColors.moderate,
+        'High Change', changeAreaColors.high,
         '#fff'],
         'fill-opacity': housingOpacity
       }
@@ -288,8 +294,9 @@ map.on("load", function () {
     }, firstSymbolId);
   }
 
-  addData(); // Change map baselayer (style)
-
+  addData();
+  
+  // Change map baselayer (style)
   var layerList = document.getElementById('style-select');
   var inputs = layerList.getElementsByTagName('input');
 
