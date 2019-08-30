@@ -2,18 +2,13 @@
 <html>
 <head>
   <meta charset='utf-8' />
-  <title>Local search app</title>
+  <title>Hume Housing</title>
   <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
   <script src='https://api.mapbox.com/mapbox-gl-js/v1.0.0/mapbox-gl.js'></script>
   <link href='https://api.mapbox.com/mapbox-gl-js/v1.0.0/mapbox-gl.css' rel='stylesheet' />
   <script src='https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v4.2.0/mapbox-gl-geocoder.min.js'></script>
   <link rel='stylesheet' href='https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v4.2.0/mapbox-gl-geocoder.css' type='text/css' />
   <script src='https://npmcdn.com/@turf/turf/turf.js'></script>
-  <script
-  src="https://code.jquery.com/jquery-3.4.1.min.js"
-  integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo="
-  crossorigin="anonymous"></script>
-  <script src="https://d3js.org/d3.v5.js"></script>
   <style>
     body {
       margin: 0;
@@ -53,6 +48,7 @@
       left: 10px;
       top: 10px;
       background-color: rgba(255, 255, 255, 0.9);
+      border: 1.5px solid #4d7991;
     }
     
     .title h1 {
@@ -66,7 +62,8 @@
       position: absolute;
       right: 10px;
       bottom: 30px;
-      background-color: rgba(255, 255, 255, 0.8);
+      background-color: #fff;
+      opacity: 0.8;
     }
     
     .legend h3 {
@@ -106,7 +103,8 @@
     .splash {
       font: 12px/20px 'Roboto Medium', roboto, Arial, sans-serif;
       padding: 20px;
-      background-color: rgba(255, 255, 255, 0.9);
+      background-color: white;
+      opacity: 0.9;
       display: flex;
       flex-direction: column;
       justify-content: center;
@@ -128,14 +126,15 @@
     
     .button {
       margin: 10% 35% 0;
-      background-color: #BFD3E6;
+      background-color: #d098d4;
       border-radius: 10px;
-      border: 2px solid gray;
+      border: 1.5px solid gray;
     }
     
     #splash-title {
       margin-bottom: 40px;
     }
+    
   </style>
 </head>
 <body>
@@ -167,7 +166,7 @@
       <h1 id="splash-title" class='flex-center-content'>Welcome to the Draft Hume Housing Diversity Strategy Map!</h1>
       <h3 class='flex-center-content'>Use this map to see where housing categories from the Draft Hume Housing Strategy are located.</h3>
       <h3 class='flex-center-content'>Click on a housing category to see a description of it, or enter an address in the search bar in the top right to see what housing category a specific property is in.</h3>
-      <button id='b' class='button' type="button">Click here to close message</button>
+      <button id='b' class='button' type="button"><h3>Click here to close message</h3></button>
       <p class="flex-center-content" id="disclaimer">Disclaimer: Hume City Council does not guarantee the accuracy of this data.</p>
     </div>
   </div>
@@ -190,7 +189,12 @@ var changeAreaColors = {
   high: '#FFCE19'
 };
 
-var changeAreaDesc = ["Limited Change Description Here", "Gradual Change Areas are not restricted by specific planning controls that limit subdivision of land, so it is expected new housing such as units and town houses will be developed gradually over time and change the look of these areas over the next 20 years. These areas are generally not a convenient walk to local shops and public transport so whilst new housing will occur naturally over time, it is not the preferred location for majority of our smaller homes as compared to the Moderate and High Change Areas. ", "Moderate Change Description Here", "High Change Description Here"];
+var changeAreaDesc = ["Areas for a Limited Level of Change has been identified in areas that are least suitable for development due aircraft noise or a low density development pattern. Limited Change is also applied to master planned estates developed in the last 25 years which often have smaller   lots and narrow, winding streets.  Given these factors,  new units or townhouse developments are not preferred in these areas.",
+  "Areas for a Gradual Level of Change has been identified in as they are generally distant from local shops and public transport and are not a preferred location for change. It is likely that one and two storey detached homes will continue to be the dominant housing in these areas. Some unit and townhouses may gradually be developed and provide one and two bedroom homes for smaller households in these areas.",
+  "Areas for a Moderate Level of Change have been identified in areas that are a convenient walking distance to either local shops or public transport. It is expected that new units, townhouses and some apartment buildings will develop in these areas. Greater diversity of dwelling size is preferred in these areas with more one and two bedroom homes providing dwelling options for the local community. Housing change will occur at an incremental rate over the next 20 or more years.",
+  "Areas for a High Level of Change have been identified for areas that are in a very convenient walkable distance to both the local shops and a train station and may include land within activity centres and along specified main roads. It is expected that townhouses and apartment buildings will develop in these areas and make a strong contribution to the diversity of housing choice for Hume residents. This housing change will occur at an incremental rate over the next 20 or more years."];
+  
+var changeAreaHtmlPaths = ['For more information, <a class="desc-click" href="pdf/Limited Change.pdf">', 'For more information, <a class="desc-click" href="pdf/Gradual Change.pdf">', 'For more information, <a class="desc-click" href="pdf/Moderate Change.pdf">', 'For more information, <a class="desc-click" href="pdf/High Change.pdf">'];
 
 var changeAreaNames = ['Limited Change', 'Gradual Change', 'Moderate Change', 'High Change'];
 var changeAreaPath = './data/change-areas-v5.geojson';
@@ -333,7 +337,7 @@ map.on("load", function () {
               console.log(data.features[f].properties.Category);
               if (data.features[f].properties.Category == changeAreaNames[i]) {
                 var searchedInsidePopup = new mapboxgl.Popup({anchor: 'top'})
-                    .setLngLat(geocoder.mapMarker._lngLat).setHTML('<b class="category">' + data.features[f].properties.Category + '</b>' + '<div class="info">' + changeAreaDesc[i] + '<br/>' + 'For more information, <a class="desc-click" href="pdf/test.pdf">click here.</a>' + '</div>').addTo(map);
+                    .setLngLat(geocoder.mapMarker._lngLat).setHTML('<b class="category">' + data.features[f].properties.Category + '</b>' + '<div class="info">' + changeAreaDesc[i] + '<br/>' + '<hr>' + changeAreaHtmlPaths[i] + 'click here.</a>' + '</div>').addTo(map);
                 
                 window.onclick = function () {
                   geocoder.clear();
@@ -371,7 +375,7 @@ map.on("load", function () {
 
     for (i = 0; i < changeAreaNames.length; i++) {
       if (category == changeAreaNames[i]) {
-        new mapboxgl.Popup().setLngLat(e.lngLat).setHTML('<b class="category">' + category + '</b>' + '<div class="info">' + changeAreaDesc[i] + '<br/>' + 'For more information, <a class="desc-click" onclick="openDescription()">click here.</a>' + '</div>').addTo(map);
+        new mapboxgl.Popup().setLngLat(e.lngLat).setHTML('<b class="category">' + category + '</b>' + '<div class="info">' + changeAreaDesc[i] + '<br/>' + '<hr>' + changeAreaHtmlPaths[i] + 'click here.</a>' + '</div>').addTo(map);
       }
     }
   });
